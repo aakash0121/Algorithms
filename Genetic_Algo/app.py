@@ -18,9 +18,10 @@ problem.varmax = 10
 params = structure()
 params.maxit = 100
 params.npop = 20
+params.pc = 1
+params.gamma = 0.1
 
 # Run GA
 out = ga.run(problem, params)
-print(0)
 
 # Results

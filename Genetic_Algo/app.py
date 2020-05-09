@@ -16,8 +16,8 @@ problem.varmax = 10
 
 # GA params
 params = structure()
-params.maxit = 100
-params.npop = 20
+params.maxit = 1000
+params.npop = 100
 params.pc = 1
 params.gamma = 0.1
 params.mu = 0.1

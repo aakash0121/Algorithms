@@ -1,5 +1,6 @@
 from ypstruct import structure
 import numpy as np 
+from copy import deepcopy
 
 def crossover(p1, p2, gamma = 0.1):
     c1 = p1.deepcopy()
@@ -34,7 +35,7 @@ def run(problem, params):
     maxit = params.maxit
     npop = params.npop
     pc = params.pc
-    nc = np.round(pc*npop/2)*2
+    nc = int(np.round(pc*npop/2)*2)
     gamma = params.gamma
     mu = params.mu
     sigma = params.sigma
@@ -54,7 +55,7 @@ def run(problem, params):
     for i in range(npop):
         pop[i].position = np.random.uniform(varmin, varmax, nvar)
         pop[i].cost = costfunc(pop[i].position)
-        if pop[i] < bestsol.cost:
+        if pop[i].cost < bestsol.cost:
             bestsol = pop[i].deepcopy()
     
     # Best cost of iterations
@@ -63,7 +64,7 @@ def run(problem, params):
     # Main loop
     for it in range(maxit):
         popc = []
-        for k in range(nc//2):
+        for _ in range(nc//2):
             #select parents randomly
             q = np.random.permutation(npop)
             p1 = pop[q[0]]
@@ -79,8 +80,37 @@ def run(problem, params):
             # Apply bounds 
             apply_bound(c1, varmin, varmax)
             apply_bound(c2, varmin, varmax)
-    
+
+            # Evaluate first offspring
+            c1.cost = costfunc(c1.position)
+            
+            if c1.cost < bestsol.cost:
+                bestsol = c1.deepcopy()
+
+            # Evaluate second offspring
+            c2.cost = costfunc(c2.position)
+            
+            if c2.cost < bestsol.cost:
+                bestsol = c2.deepcopy()
+
+            # Add offsprings to popc
+            popc.append(c1)
+            popc.append(c2)
+
+        # Merge, sort, select
+        pop += popc
+        pop = sorted(pop, key=lambda x:x.cost)
+        pop = pop[0:npop]
+
+        # store best cost
+        bestcost[it] = bestsol.cost
+
+        # show iteration information
+        print("Iteration {}: Best cost = {}".format(it, bestcost[it]))
+
     # Output
     out = structure()
     out.pop = pop
+    out.bestsol = bestsol
+    out.bestcost = bestcost
     return out

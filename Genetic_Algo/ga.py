@@ -10,6 +10,18 @@ def crossover(p1, p2, gamma = 0.1):
 
     return c1, c2
 
+def mutate(x, mu, sigma):
+    y = x.deepcopy()
+    flag = np.random.rand(*x.position.shape) <= mu
+    ind = np.argwhere(flag)
+    y.position[ind] += sigma*np.random.randn(*ind.shape)
+    return y
+
+def apply_bound(x, varmin, varmax):
+    x.position = np.maximum(x.position, varmin)
+    x.position = np.minimum(x.position, varmax)
+
+
 def run(problem, params):
     
     # Problem Information
@@ -23,7 +35,9 @@ def run(problem, params):
     npop = params.npop
     pc = params.pc
     nc = np.round(pc*npop/2)*2
-
+    gamma = params.gamma
+    mu = params.mu
+    sigma = params.sigma
 
     # empty individual template
     empty_individual = structure()
@@ -56,9 +70,15 @@ def run(problem, params):
             p2 = pop[q[1]]
 
             # performing crossover
-            c1, c2 = crossover(p1, p2)
+            c1, c2 = crossover(p1, p2, gamma)
 
+            # performing mutation
+            c1 = mutate(c1, mu, sigma)
+            c2 = mutate(c2, mu, sigma)
 
+            # Apply bounds 
+            apply_bound(c1, varmin, varmax)
+            apply_bound(c2, varmin, varmax)
     
     # Output
     out = structure()
